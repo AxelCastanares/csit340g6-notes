@@ -102,7 +102,7 @@ const visibleNotes = notes.filter((note) =>
             </li>
           ))}
         </ul>
-        {visibleNotes.length === 0 && (
+        {visibleNotes.length === 0 &&  (
             <p className="text-lg text-[#949494]">No notes found</p>
         )}
       </section>
