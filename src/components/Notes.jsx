@@ -2,11 +2,16 @@ import { useState } from 'react'
 import NoteCard from './NoteCard.jsx'
 
 function Notes() {
-  const [notes] = useState([
+  const [notes, setNotes] = useState([
     {
       id: 1,
-      title: 'asdasdas',
-      body: 'asdas',
+      title: 'Review map and filter',
+      body: 'Redo the TodoMVC steps without looking at the guide.',
+    },
+    {
+      id: 2,
+      title: 'Prepare for the quiz',
+      body: 'Practice writing one handler for many inputs.',
     },
   ])
 
@@ -15,6 +20,15 @@ function Notes() {
 function handleChange(e) {
   const { name, value } = e.target
   setForm((prev) => ({ ...prev, [name]: value }))
+}
+
+function handleSubmit(e) {
+  e.preventDefault()
+  const title = form.title.trim()
+  const body = form.body.trim()
+  if (!title || !body) return
+  setNotes((prev) => [...prev, { id: Date.now(), title, body }])
+  setForm({ title: '', body: '' })
 }
 
   
@@ -34,7 +48,7 @@ function handleChange(e) {
           />
         </div>
 
-        <form className="grid gap-3">
+        <form onSubmit={handleSubmit} className="grid gap-3">
           <p className="text-[13px] font-normal tracking-wide text-[#949494]">NEW NOTE</p>
           <input
             name="title"
