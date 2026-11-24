@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import NoteCard from './NoteCard.jsx'
 
 const startingNotes = [
@@ -19,7 +19,10 @@ function Notes() {
     const saved = localStorage.getItem('notes')
     return saved ? JSON.parse(saved) : startingNotes
   })
-  const [form, setForm] = useState({ title: '', body: '' })
+  const [form, setForm] = useState(() => {
+    const saved = localStorage.getItem('draft')
+    return saved ? JSON.parse(saved) : { title: '', body: '' }
+  })
   const [search, setSearch] = useState('')
   const titleRef = useRef(null)
 
@@ -28,12 +31,11 @@ function Notes() {
   }, [notes])
 
   useEffect(() => {
-  const id = setTimeout(() => {
-    localStorage.setItem('draft', JSON.stringify(form))
-    console.log('draft saved:', form.title)
-  }, 1000)
-  return () => clearTimeout(id)
-}, [form])
+    const id = setTimeout(() => {
+      localStorage.setItem('draft', JSON.stringify(form))
+    }, 1000)
+    return () => clearTimeout(id)
+  }, [form])
 
   function handleChange(e) {
     const { name, value } = e.target
@@ -50,16 +52,18 @@ function Notes() {
     titleRef.current.focus()
   }
 
-  function handleDelete(id) {
-    setNotes((prev) => prev.filter((note) => note.id !== id))
-  }
+  const handleDelete = useCallback(
+    (id) => {
+      setNotes(notes.filter((note) => note.id !== id))
+    },
+    [notes]
+  )
 
   const visibleNotes = useMemo(() => {
-  console.log('filtering')
-  return notes.filter((note) =>
-    note.title.toLowerCase().includes(search.toLowerCase())
-  )
-}, [notes, search])
+    return notes.filter((note) =>
+      note.title.toLowerCase().includes(search.toLowerCase())
+    )
+  }, [notes, search])
 
   return (
     <div className="grid min-h-screen grid-cols-[420px_1fr]">
@@ -113,19 +117,18 @@ function Notes() {
               key={note.id}
               className="relative min-h-32 bg-white px-6 py-5 shadow-[0_2px_4px_0_rgba(0,0,0,0.2),0_25px_50px_0_rgba(0,0,0,0.1)]"
             >
-              <NoteCard title={note.title} body={note.body} />
-              <button
-                type="button"
-                onClick={() => handleDelete(note.id)}
-                className="absolute top-4 right-5 cursor-pointer text-[26px] leading-none text-[#949494] hover:text-[#c18585]"
-              >
-                ×
-              </button>
+              <NoteCard
+                id={note.id}
+                title={note.title}
+                body={note.body}
+                onDelete={handleDelete}
+              />
             </li>
           ))}
         </ul>
-        {visibleNotes.length === 0 &&  (
-            <p className="text-lg text-[#949494]">No notes found</p>
+
+        {visibleNotes.length === 0 && (
+          <p className="text-lg text-[#949494]">No notes found</p>
         )}
       </section>
     </div>
