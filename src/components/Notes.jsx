@@ -1,47 +1,50 @@
 import { useState, useEffect } from 'react'
 import NoteCard from './NoteCard.jsx'
 
+const startingNotes = [
+  {
+    id: 1,
+    title: 'Review map and filter',
+    body: 'Redo the TodoMVC steps without looking at the guide.',
+  },
+  {
+    id: 2,
+    title: 'Prepare for the quiz',
+    body: 'Practice writing one handler for many inputs.',
+  },
+]
 
 function Notes() {
-  const [notes, setNotes] = useState([
-    {
-      id: 1,
-      title: 'Review map and filter',
-      body: 'Redo the TodoMVC steps without looking at the guide.',
-    },
-    {
-      id: 2,
-      title: 'Prepare for the quiz',
-      body: 'Practice writing one handler for many inputs.',
-    },
-  ])
-
+  const [notes, setNotes] = useState(() => {
+    const saved = localStorage.getItem('notes')
+    return saved ? JSON.parse(saved) : startingNotes
+  })
   const [form, setForm] = useState({ title: '', body: '' })
   const [search, setSearch] = useState('')
 
   useEffect(() => {
-  localStorage.setItem('notes', JSON.stringify(notes))
-}, [notes])
+    localStorage.setItem('notes', JSON.stringify(notes))
+  }, [notes])
 
-function handleChange(e) {
-  const { name, value } = e.target
-  setForm((prev) => ({ ...prev, [name]: value }))
-}
+  function handleChange(e) {
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }
 
-function handleSubmit(e) {
-  e.preventDefault()
-  const title = form.title.trim()
-  const body = form.body.trim()
-  if (!title || !body) return
-  setNotes((prev) => [...prev, { id: Date.now(), title, body }])
-  setForm({ title: '', body: '' })
-}
+  function handleSubmit(e) {
+    e.preventDefault()
+    const title = form.title.trim()
+    const body = form.body.trim()
+    if (!title || !body) return
+    setNotes((prev) => [...prev, { id: Date.now(), title, body }])
+    setForm({ title: '', body: '' })
+  }
 
-function handleDelete(id) {
-  setNotes((prev) => prev.filter((note) => note.id !== id))
-}
-  
-const visibleNotes = notes.filter((note) =>    
+  function handleDelete(id) {
+    setNotes((prev) => prev.filter((note) => note.id !== id))
+  }
+
+  const visibleNotes = notes.filter((note) =>
     note.title.toLowerCase().includes(search.toLowerCase())
   )
 
@@ -91,7 +94,7 @@ const visibleNotes = notes.filter((note) =>
         <h2 className="mb-6 text-3xl">All notes</h2>
 
         <ul className="grid grid-cols-3 items-start gap-5">
-          {notes.map((note) => (
+          {visibleNotes.map((note) => (
             <li
               key={note.id}
               className="relative min-h-32 bg-white px-6 py-5 shadow-[0_2px_4px_0_rgba(0,0,0,0.2),0_25px_50px_0_rgba(0,0,0,0.1)]"
